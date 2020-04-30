@@ -26,8 +26,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         {
             this.layers[i] = layers[i];
         }
-
-
+        
         //generate matrix
         InitNeurons();
         InitWeights();

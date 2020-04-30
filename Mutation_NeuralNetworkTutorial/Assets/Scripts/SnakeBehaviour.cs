@@ -3,23 +3,34 @@ using System.Collections.Generic;
 using UnityEngine;
 using static Grid;
 
-public class SnakeBehaviour : MonoBehaviour
+namespace Completed
+{
+
+public class SnakeBehaviour : MovingObject
 {
 
     public GameObject tailPrefab;
+    private GameInformation gameInformation;
     private Vector2 direction = Vector2.up;
     private float speed = 1f;
 
     private List<Transform> tail;
-    Cell[,] board;
-    // Start is called before the first frame update
-    void Start()
+    public Cell[,] board;
+        // Start is called before the first frame update
+    protected override void Start()
     {
-
+        gameInformation = FindObjectOfType<GameInformation>();
         tail = new List<Transform>();
-       // Grid grid = FindObjectOfType<Grid>();
-       // board = grid.board;
+        board = gameInformation.board;
         gameObject.transform.position = board[5, 5].position;
+        StartCoroutine("MoveSnake");
+        base.Start();
+    }
+
+    private void AddTaill()
+    {
+        GameObject tailPart = Instantiate(tailPrefab, tail[tail.Count - 1].position, Quaternion.identity, this.transform);
+        tail.Add(tailPart.transform);
     }
 
     // Update is called once per frame
@@ -41,15 +52,27 @@ public class SnakeBehaviour : MonoBehaviour
         {
             direction = new Vector2(0, -1);
         }
-
-
-
-        
     }
 
     IEnumerator MoveSnake()
     {
+        for (; ; )
+        {
+            transform.position += new Vector3(direction.x, direction.y, 0) * speed;
+            board[(int)transform.position.x, (int)transform.position.y].space = Cell.Space.snake;
+            for(int i = 0; i < tail.Count -1; i++)
+            {
+                tail[i + 1].position = tail[i].position;
+            }
+            yield return new WaitForSeconds(1f);
+        }
         
-        yield return new WaitForSeconds(1f);
+    }
+
+        protected override void OnCantMove<T>(T component)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }
+
