@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static Grid;
@@ -29,7 +30,7 @@ public class SnakeBehaviour : MovingObject
 
     private void AddTaill()
     {
-        GameObject tailPart = Instantiate(tailPrefab, tail[tail.Count - 1].position, Quaternion.identity, this.transform);
+        GameObject tailPart = Instantiate(tailPrefab, gameObject.transform.position, Quaternion.identity, this.transform);
         tail.Add(tailPart.transform);
     }
 
@@ -52,22 +53,43 @@ public class SnakeBehaviour : MovingObject
         {
             direction = new Vector2(0, -1);
         }
+        if(Input.GetKeyDown(KeyCode.Space))
+        {
+                AddTaill();
+        }
     }
 
     IEnumerator MoveSnake()
     {
+        
         for (; ; )
         {
-            transform.position += new Vector3(direction.x, direction.y, 0) * speed;
-            board[(int)transform.position.x, (int)transform.position.y].space = Cell.Space.snake;
-            for(int i = 0; i < tail.Count -1; i++)
+            Vector3 newPosition = transform.position + new Vector3(direction.x, direction.y, 0) * speed;
+            if(board[(int)newPosition.x, (int)newPosition.y].space != Cell.Space.empty && board[(int)newPosition.x, (int)newPosition.y].space != Cell.Space.apple)
             {
-                tail[i + 1].position = tail[i].position;
+                    Debug.Log(board[(int)newPosition.x, (int)newPosition.y].space);
+                    GameOver();
             }
-            yield return new WaitForSeconds(1f);
+            else
+            {
+                board[(int)transform.position.x, (int)transform.position.y].space = Cell.Space.snake;
+                transform.position += new Vector3(direction.x, direction.y, 0) * speed;
+                    for (int i = 0; i < tail.Count - 1; i++)
+                {
+                    tail[i + 1].position = tail[i].position;
+                }
+            }
+                yield return new WaitForSeconds(1f);
         }
-        
+            
+
     }
+
+        private void GameOver()
+        {
+            StopCoroutine("MoveSnake");
+            Debug.Log("GameOverLoser");
+        }
 
         protected override void OnCantMove<T>(T component)
         {
